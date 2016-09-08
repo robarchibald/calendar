@@ -161,7 +161,7 @@ func getWeeklyOccurrences(recurrenceStartDate time.Time, recurEvery int, daysInc
 	if startDate.Before(timePeriodStart) {
 		startDate = getWeeklyStartTime(recurrenceStartDate, recurEvery, timePeriodStart)
 	}
-	currentDate := startDate
+	currentDate := startDate.AddDate(0, 0, -1*int(startDate.Weekday())) // turn into beginning of week
 	for currentDate.Before(timePeriodEnd) && (recurrenceEndByDate == nil || currentDate.Before(*recurrenceEndByDate)) {
 		recurrences = append(recurrences, getIncludedDays(daysIncluded, currentDate, timePeriodStart, timePeriodEnd)...)
 		currentDate = currentDate.AddDate(0, 0, 7*(recurEvery))
@@ -176,7 +176,7 @@ func getIncludedDays(daysIncluded []time.Weekday, startDate, timePeriodStart, ti
 		if date.After(timePeriodEnd) {
 			break
 		}
-		if date.After(timePeriodStart) {
+		if date.After(timePeriodStart) || date.Equal(timePeriodStart) {
 			days = append(days, date)
 		}
 	}
