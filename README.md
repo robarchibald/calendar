@@ -9,10 +9,6 @@ A simple Go library to calculate recurring appointment dates within a time perio
 
 
 ```
-import (
-  	"time"
-)
-    
 // Every 4th weekday
 startTime := time.Date(2016, 1, 1, 12, 30, 0, 0, time.UTC)
 dailyIsOnlyWeekday := true
