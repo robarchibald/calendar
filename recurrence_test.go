@@ -20,19 +20,17 @@ func TestGetOccurrences(t *testing.T) {
 		time.Date(2016, 1, 25, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 29, 12, 30, 0, 0, time.UTC)}
 	compareTimes(t, expected, occurrences, "TestGetOccurrences, every 4th weekday")
 
-	// MWF every 2 weeks for 6 meetings
+	// MWF every 2 weeks
 	var weeklyDaysIncluded int16 = 42 // MWF (M = 32, W = 8, F = 2)
-	var numberOfOccurrences int16 = 6
 	r = Recurrence{
 		StartDateTime:         startTime,
 		RecurrencePatternCode: "W",
 		RecurEvery:            2,
-		WeeklyDaysIncluded:    &weeklyDaysIncluded,
-		NumberOfOccurrences:   &numberOfOccurrences}
+		WeeklyDaysIncluded:    &weeklyDaysIncluded}
 	occurrences = r.GetOccurences(startTime, startTime.AddDate(0, 1, 0))
 	expected = []time.Time{time.Date(2016, 1, 1, 12, 30, 0, 0, time.UTC),
 		time.Date(2016, 1, 11, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 13, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 15, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 1, 25, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 27, 12, 30, 0, 0, time.UTC)}
+		time.Date(2016, 1, 25, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 27, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 29, 12, 30, 0, 0, time.UTC)}
 	compareTimes(t, expected, occurrences, "TestGetOccurrences, MWF every 2 weeks")
 
 	// 4th Thursday of every other month for 6 months
@@ -50,7 +48,6 @@ func TestGetOccurrences(t *testing.T) {
 	expected = []time.Time{time.Date(2016, 1, 28, 12, 30, 0, 0, time.UTC),
 		time.Date(2016, 3, 24, 12, 30, 0, 0, time.UTC), time.Date(2016, 5, 26, 12, 30, 0, 0, time.UTC)}
 	compareTimes(t, expected, occurrences, "TestGetOccurrences, 4th Thursday")
-	t.Log(occurrences)
 
 	// 3rd Thursday of June
 	var yearlyMonth int16 = 6
@@ -67,7 +64,6 @@ func TestGetOccurrences(t *testing.T) {
 	expected = []time.Time{time.Date(2016, 6, 16, 12, 30, 0, 0, time.UTC),
 		time.Date(2017, 6, 15, 12, 30, 0, 0, time.UTC)}
 	compareTimes(t, expected, occurrences, "TestGetOccurrences, 3rd Thursday of June")
-	t.Log(occurrences)
 
 	r = Recurrence{RecurrencePatternCode: "B"} // bogus pattern
 	if len(r.GetOccurences(startTime, startTime.AddDate(1, 0, 0))) != 0 {

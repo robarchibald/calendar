@@ -7,16 +7,16 @@ import (
 
 type Recurrence struct {
 	StartDateTime         time.Time
-	RecurrencePatternCode string
-	RecurEvery            int16
-	YearlyMonth           *int16
-	MonthlyWeekOfMonth    *int16
-	MonthlyDayOfWeek      *int16
-	MonthlyDay            *int16
-	WeeklyDaysIncluded    *int16
-	DailyIsOnlyWeekday    *bool
-	NumberOfOccurrences   *int16
-	EndByDate             *time.Time
+	RecurrencePatternCode string     // D for daily, W for weekly, M for monthly or Y for yearly
+	RecurEvery            int16      // number of days, weeks, months or years between occurrences
+	YearlyMonth           *int16     // month of the year to recur (applies only to RecurrencePatternCode: Y)
+	MonthlyWeekOfMonth    *int16     // week of the month to recur. used together with MonthlyDayOfWeek (applies only to RecurrencePatternCode: M or Y)
+	MonthlyDayOfWeek      *int16     // day of the week to recur. used together with MonthlyWeekOfMonth (applies only to RecurrencePatternCode: M or Y)
+	MonthlyDay            *int16     // day of the month to recur (applies only to RecurrencePatternCode: M or Y)
+	WeeklyDaysIncluded    *int16     // integer representing binary values AND'd together for 1000000-64 (Sun), 0100000-32 (Mon), 0010000-16 (Tu), 0001000-8 (W), 0000100-4 (Th), 0000010-2 (F), 0000001-1 (Sat). (applies only to RecurrencePatternCode: M or Y)
+	DailyIsOnlyWeekday    *bool      // indicator that daily recurrences should only be on weekdays (applies only to RecurrencePatternCode: D)
+	NumberOfOccurrences   *int16     // UI-only value. Not used in calculations
+	EndByDate             *time.Time // date by which all occurrences must end by
 }
 
 func (r *Recurrence) GetOccurences(timePeriodStart, timePeriodEnd time.Time) []time.Time {
