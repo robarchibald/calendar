@@ -7,20 +7,22 @@ A simple Go library to calculate recurring appointment dates within a time perio
  1. Create a Recurrence Struct (normally pulled from database)
  2. call GetOccurrences(startTime, endTime)
 
-    import (
-    	"time"
-    )
-    
-    // Every 4th weekday
-    startTime := time.Date(2016, 1, 1, 12, 30, 0, 0, time.UTC)
-    dailyIsOnlyWeekday := true
-    r := Recurrence{
-    	StartDateTime:         startTime,
-    	RecurrencePatternCode: "D",
-    	RecurEvery:            4,
-    	DailyIsOnlyWeekday:    &dailyIsOnlyWeekday}
-    occurrences := r.GetOccurences(startTime, startTime.AddDate(0, 1, 0))
 
+```
+import (
+  	"time"
+)
+    
+// Every 4th weekday
+startTime := time.Date(2016, 1, 1, 12, 30, 0, 0, time.UTC)
+dailyIsOnlyWeekday := true
+r := Recurrence{
+	StartDateTime:         startTime,
+	RecurrencePatternCode: "D",
+	RecurEvery:            4,
+	DailyIsOnlyWeekday:    &dailyIsOnlyWeekday}
+occurrences := r.GetOccurences(startTime, startTime.AddDate(0, 1, 0))
+```
 For additional examples, see recurrence_test.go
 
 ## Notes about the Recurrence Struct
