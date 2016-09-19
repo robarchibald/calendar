@@ -7,46 +7,47 @@ import (
 
 func TestGetOccurrences(t *testing.T) {
 	// Every 4th weekday
-	startTime := time.Date(2016, 1, 1, 12, 30, 0, 0, time.UTC)
+	startDate := time.Date(2016, 1, 1, 12, 30, 0, 0, time.Local) // note that GetOccurrences will strip the time and location out of this
+	startDateNoTime := time.Date(startDate.Year(), startDate.Month(), startDate.Day(), 0, 0, 0, 0, time.UTC)
 	dailyIsOnlyWeekday := true
 	r := Recurrence{
-		StartDateTime:         startTime,
+		StartDate:             startDate,
 		RecurrencePatternCode: "D",
 		RecurEvery:            4,
 		DailyIsOnlyWeekday:    &dailyIsOnlyWeekday}
-	occurrences := r.GetOccurences(startTime, startTime.AddDate(0, 1, 0))
-	expected := []time.Time{time.Date(2016, 1, 1, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 1, 7, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 13, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 19, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 1, 25, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 29, 12, 30, 0, 0, time.UTC)}
+	occurrences := r.GetOccurences(startDateNoTime, startDate.AddDate(0, 1, 0))
+	expected := []time.Time{time.Date(2016, 1, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 1, 7, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 13, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 19, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 1, 25, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 29, 0, 0, 0, 0, time.UTC)}
 	compareTimes(t, expected, occurrences, "TestGetOccurrences, every 4th weekday")
 
 	// MWF every 2 weeks
 	var weeklyDaysIncluded int16 = 42 // MWF (M = 32, W = 8, F = 2)
 	r = Recurrence{
-		StartDateTime:         startTime,
+		StartDate:             startDate,
 		RecurrencePatternCode: "W",
 		RecurEvery:            2,
 		WeeklyDaysIncluded:    &weeklyDaysIncluded}
-	occurrences = r.GetOccurences(startTime, startTime.AddDate(0, 1, 0))
-	expected = []time.Time{time.Date(2016, 1, 1, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 1, 11, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 13, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 15, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 1, 25, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 27, 12, 30, 0, 0, time.UTC), time.Date(2016, 1, 29, 12, 30, 0, 0, time.UTC)}
+	occurrences = r.GetOccurences(startDateNoTime, startDate.AddDate(0, 1, 0))
+	expected = []time.Time{time.Date(2016, 1, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 1, 11, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 13, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 15, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 1, 25, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 27, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 29, 0, 0, 0, 0, time.UTC)}
 	compareTimes(t, expected, occurrences, "TestGetOccurrences, MWF every 2 weeks")
 
 	// 4th Thursday of every other month for 6 months
 	var monthlyDayOfWeek int16 = 4
 	var monthlyWeekOfMonth int16 = 4
-	endByDate := startTime.AddDate(0, 6, 0)
+	endByDate := startDate.AddDate(0, 6, 0)
 	r = Recurrence{
-		StartDateTime:         startTime,
+		StartDate:             startDate,
 		RecurrencePatternCode: "M",
 		RecurEvery:            2,
 		MonthlyDayOfWeek:      &monthlyDayOfWeek,
 		MonthlyWeekOfMonth:    &monthlyWeekOfMonth,
 		EndByDate:             &endByDate}
-	occurrences = r.GetOccurences(startTime, startTime.AddDate(1, 0, 0))
-	expected = []time.Time{time.Date(2016, 1, 28, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 3, 24, 12, 30, 0, 0, time.UTC), time.Date(2016, 5, 26, 12, 30, 0, 0, time.UTC)}
+	occurrences = r.GetOccurences(startDateNoTime, startDate.AddDate(1, 0, 0))
+	expected = []time.Time{time.Date(2016, 1, 28, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 3, 24, 0, 0, 0, 0, time.UTC), time.Date(2016, 5, 26, 0, 0, 0, 0, time.UTC)}
 	compareTimes(t, expected, occurrences, "TestGetOccurrences, 4th Thursday")
 
 	// 3rd Thursday of June
@@ -54,38 +55,58 @@ func TestGetOccurrences(t *testing.T) {
 	monthlyDayOfWeek = 4
 	monthlyWeekOfMonth = 3
 	r = Recurrence{
-		StartDateTime:         startTime,
+		StartDate:             startDate,
 		RecurrencePatternCode: "Y",
 		RecurEvery:            1,
 		YearlyMonth:           &yearlyMonth,
 		MonthlyDayOfWeek:      &monthlyDayOfWeek,
 		MonthlyWeekOfMonth:    &monthlyWeekOfMonth}
-	occurrences = r.GetOccurences(startTime.AddDate(0, 1, 0), startTime.AddDate(2, 0, 0))
-	expected = []time.Time{time.Date(2016, 6, 16, 12, 30, 0, 0, time.UTC),
-		time.Date(2017, 6, 15, 12, 30, 0, 0, time.UTC)}
+	occurrences = r.GetOccurences(startDate.AddDate(0, 1, 0), startDate.AddDate(2, 0, 0))
+	expected = []time.Time{time.Date(2016, 6, 16, 0, 0, 0, 0, time.UTC),
+		time.Date(2017, 6, 15, 0, 0, 0, 0, time.UTC)}
 	compareTimes(t, expected, occurrences, "TestGetOccurrences, 3rd Thursday of June")
 
 	r = Recurrence{RecurrencePatternCode: "B"} // bogus pattern
-	if len(r.GetOccurences(startTime, startTime.AddDate(1, 0, 0))) != 0 {
+	if len(r.GetOccurences(startDate, startDate.AddDate(1, 0, 0))) != 0 {
 		t.Error("Expected empty for bogus recurrence pattern code")
 	}
 }
 
+func TestIsValidOccurrence(t *testing.T) {
+	// Every 4th weekday
+	startTime := time.Date(2016, 1, 1, 0, 0, 0, 0, time.UTC)
+	dailyIsOnlyWeekday := true
+	r := Recurrence{
+		StartDate:             startTime,
+		RecurrencePatternCode: "D",
+		RecurEvery:            4,
+		DailyIsOnlyWeekday:    &dailyIsOnlyWeekday}
+
+	if !r.IsValidOccurrenceDate(time.Date(2016, 1, 7, 0, 0, 0, 0, time.UTC)) {
+		t.Error("expected to be a valid occurrence")
+	}
+
+	// wrong date
+	if r.IsValidOccurrenceDate(time.Date(2016, 1, 6, 0, 0, 0, 0, time.UTC)) {
+		t.Error("Expected failure")
+	}
+}
+
 func TestGetDailyOccurrencesWeekdays(t *testing.T) {
-	expected := []time.Time{time.Date(2016, 4, 1, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 4, 4, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 5, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 6, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 7, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 8, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 4, 11, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 12, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 13, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 14, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 15, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 4, 18, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 19, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 20, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 21, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 22, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 4, 25, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 26, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 27, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 28, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 29, 12, 30, 0, 0, time.UTC)}
-	actual := getDailyOccurrences(time.Date(2010, 1, 1, 12, 30, 0, 0, time.UTC), 1, true, nil, time.Date(2016, 4, 1, 0, 0, 0, 0, time.UTC), time.Date(2016, 5, 1, 0, 0, 0, 0, time.UTC))
+	expected := []time.Time{time.Date(2016, 4, 1, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 4, 4, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 5, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 6, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 7, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 8, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 4, 11, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 12, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 13, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 14, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 15, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 4, 18, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 19, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 20, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 21, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 22, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 4, 25, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 26, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 27, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 28, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 29, 0, 0, 0, 0, time.UTC)}
+	actual := getDailyOccurrences(time.Date(2010, 1, 1, 0, 0, 0, 0, time.UTC), 1, true, nil, time.Date(2016, 4, 1, 0, 0, 0, 0, time.UTC), time.Date(2016, 5, 1, 0, 0, 0, 0, time.UTC))
 	compareTimes(t, expected, actual, "TestGetDailyOccurrencesWeekdays")
 }
 
 func TestGetDailyOccurrencesAllDays(t *testing.T) {
-	expected := []time.Time{time.Date(2016, 4, 2, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 4, 5, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 8, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 11, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 14, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 17, 12, 30, 0, 0, time.UTC),
-		time.Date(2016, 4, 20, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 23, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 26, 12, 30, 0, 0, time.UTC), time.Date(2016, 4, 29, 12, 30, 0, 0, time.UTC)}
-	actual := getDailyOccurrences(time.Date(2010, 1, 1, 12, 30, 0, 0, time.UTC), 3, false, nil, time.Date(2016, 4, 1, 0, 0, 0, 0, time.UTC), time.Date(2016, 5, 1, 0, 0, 0, 0, time.UTC))
+	expected := []time.Time{time.Date(2016, 4, 2, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 4, 5, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 8, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 11, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 14, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 17, 0, 0, 0, 0, time.UTC),
+		time.Date(2016, 4, 20, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 23, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 26, 0, 0, 0, 0, time.UTC), time.Date(2016, 4, 29, 0, 0, 0, 0, time.UTC)}
+	actual := getDailyOccurrences(time.Date(2010, 1, 1, 0, 0, 0, 0, time.UTC), 3, false, nil, time.Date(2016, 4, 1, 0, 0, 0, 0, time.UTC), time.Date(2016, 5, 1, 0, 0, 0, 0, time.UTC))
 	compareTimes(t, expected, actual, "TestGetDailyOccurrencesAllDays")
 }
 
@@ -308,11 +329,11 @@ func TestGetMonths(t *testing.T) {
 }
 
 func TestGetYearlyOccurrences(t *testing.T) {
-	recurrenceStartDate := time.Date(2010, 1, 1, 12, 30, 0, 0, time.UTC)
+	recurrenceStartDate := time.Date(2010, 1, 1, 0, 0, 0, 0, time.UTC)
 	timePeriodStart := time.Date(2016, 4, 1, 0, 0, 0, 0, time.UTC)
 	timePeriodEnd := time.Date(2018, 4, 1, 0, 0, 0, 0, time.UTC)
 	var yearlyMonth, monthlyDay, monthlyDayOfWeek, monthlyWeekOfMonth int16
-	expected := []time.Time{time.Date(2017, 2, 14, 12, 30, 0, 0, time.UTC), time.Date(2018, 2, 14, 12, 30, 0, 0, time.UTC)}
+	expected := []time.Time{time.Date(2017, 2, 14, 0, 0, 0, 0, time.UTC), time.Date(2018, 2, 14, 0, 0, 0, 0, time.UTC)}
 	yearlyMonth = 2
 	monthlyDay = 14 // 14th of every month
 	actual := getYearlyOccurrences(recurrenceStartDate, 1, &yearlyMonth, &monthlyDay, nil, nil, nil, timePeriodStart, timePeriodEnd)
@@ -320,7 +341,7 @@ func TestGetYearlyOccurrences(t *testing.T) {
 
 	monthlyDayOfWeek = 4   // Thursday
 	monthlyWeekOfMonth = 3 // 3rd week
-	expected = []time.Time{time.Date(2017, 2, 16, 12, 30, 0, 0, time.UTC), time.Date(2018, 2, 15, 12, 30, 0, 0, time.UTC)}
+	expected = []time.Time{time.Date(2017, 2, 16, 0, 0, 0, 0, time.UTC), time.Date(2018, 2, 15, 0, 0, 0, 0, time.UTC)}
 	actual = getYearlyOccurrences(recurrenceStartDate, 1, &yearlyMonth, nil, &monthlyDayOfWeek, &monthlyWeekOfMonth, nil, timePeriodStart, timePeriodEnd)
 	compareTimes(t, expected, actual, "TestGetYearlyOccurrences, 3rd Thursday")
 }

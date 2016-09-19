@@ -6,7 +6,7 @@ import (
 )
 
 type Recurrence struct {
-	StartDateTime         time.Time
+	StartDate             time.Time  // Date to start Recurrence. Note that time and time zone information is NOT used in calculations
 	RecurrencePatternCode string     // D for daily, W for weekly, M for monthly or Y for yearly
 	RecurEvery            int16      // number of days, weeks, months or years between occurrences
 	YearlyMonth           *int16     // month of the year to recur (applies only to RecurrencePatternCode: Y)
@@ -15,36 +15,48 @@ type Recurrence struct {
 	MonthlyDay            *int16     // day of the month to recur (applies only to RecurrencePatternCode: M or Y)
 	WeeklyDaysIncluded    *int16     // integer representing binary values AND'd together for 1000000-64 (Sun), 0100000-32 (Mon), 0010000-16 (Tu), 0001000-8 (W), 0000100-4 (Th), 0000010-2 (F), 0000001-1 (Sat). (applies only to RecurrencePatternCode: M or Y)
 	DailyIsOnlyWeekday    *bool      // indicator that daily recurrences should only be on weekdays (applies only to RecurrencePatternCode: D)
-	NumberOfOccurrences   *int16     // UI-only value. Not used in calculations
-	EndByDate             *time.Time // date by which all occurrences must end by
+	EndByDate             *time.Time // date by which all occurrences must end by. Note that time and time zone information is NOT used in calculations
 }
 
 func (r *Recurrence) GetOccurences(timePeriodStart, timePeriodEnd time.Time) []time.Time {
+	// Remove all time and time zone information from the recurrence start and end dates
+	startDate := time.Date(r.StartDate.Year(), r.StartDate.Month(), r.StartDate.Day(), 0, 0, 0, 0, time.UTC)
+	var endDate *time.Time
+	if r.EndByDate != nil {
+		end := time.Date(r.EndByDate.Year(), r.EndByDate.Month(), r.EndByDate.Day(), 0, 0, 0, 0, time.UTC)
+		endDate = &end
+	}
 	switch {
 	case r.RecurrencePatternCode == "D":
-		return getDailyOccurrences(r.StartDateTime, int(r.RecurEvery), *r.DailyIsOnlyWeekday, r.EndByDate, timePeriodStart, timePeriodEnd)
+		return getDailyOccurrences(startDate, int(r.RecurEvery), *r.DailyIsOnlyWeekday, endDate, timePeriodStart, timePeriodEnd)
 	case r.RecurrencePatternCode == "W":
-		return getWeeklyOccurrences(r.StartDateTime, int(r.RecurEvery), getIncludedWeeklyDays(*r.WeeklyDaysIncluded), r.EndByDate, timePeriodStart, timePeriodEnd)
+		return getWeeklyOccurrences(startDate, int(r.RecurEvery), getIncludedWeeklyDays(*r.WeeklyDaysIncluded), endDate, timePeriodStart, timePeriodEnd)
 	case r.RecurrencePatternCode == "M":
-		return getMonthlyOccurrences(r.StartDateTime, int(r.RecurEvery), r.MonthlyDay, r.MonthlyDayOfWeek, r.MonthlyWeekOfMonth, r.EndByDate, timePeriodStart, timePeriodEnd)
+		return getMonthlyOccurrences(startDate, int(r.RecurEvery), r.MonthlyDay, r.MonthlyDayOfWeek, r.MonthlyWeekOfMonth, endDate, timePeriodStart, timePeriodEnd)
 	case r.RecurrencePatternCode == "Y":
-		return getYearlyOccurrences(r.StartDateTime, int(r.RecurEvery), r.YearlyMonth, r.MonthlyDay, r.MonthlyDayOfWeek, r.MonthlyWeekOfMonth, r.EndByDate, timePeriodStart, timePeriodEnd)
+		return getYearlyOccurrences(startDate, int(r.RecurEvery), r.YearlyMonth, r.MonthlyDay, r.MonthlyDayOfWeek, r.MonthlyWeekOfMonth, endDate, timePeriodStart, timePeriodEnd)
 	}
 	return []time.Time{}
 }
 
+func (r *Recurrence) IsValidOccurrenceDate(occurrenceDate time.Time) bool {
+	// Remove all time and time zone information from the occurrenceDate
+	date := time.Date(occurrenceDate.Year(), occurrenceDate.Month(), occurrenceDate.Day(), 0, 0, 0, 0, time.UTC)
+	occurrences := r.GetOccurences(date, date)
+	return len(occurrences) == 1 && occurrences[0] == date
+}
+
 func getDailyOccurrences(recurrenceStartDate time.Time, recurEvery int, dailyIsOnlyWeekday bool, recurrenceEndByDate *time.Time, timePeriodStart, timePeriodEnd time.Time) []time.Time {
 	recurrences := []time.Time{}
-	startDate := recurrenceStartDate
-	if startDate.Before(timePeriodStart) {
+	currentDate := recurrenceStartDate
+	if currentDate.Before(timePeriodStart) {
 		if dailyIsOnlyWeekday {
-			startDate = getWeekdayStartTime(recurrenceStartDate, recurEvery, timePeriodStart)
+			currentDate = getWeekdayStartTime(recurrenceStartDate, recurEvery, timePeriodStart)
 		} else {
-			startDate = getDailyStartTime(recurrenceStartDate, recurEvery, timePeriodStart)
+			currentDate = getDailyStartTime(recurrenceStartDate, recurEvery, timePeriodStart)
 		}
 	}
-	currentDate := startDate
-	for currentDate.Before(timePeriodEnd) {
+	for currentDate.Before(timePeriodEnd) || currentDate.Equal(timePeriodEnd) {
 		recurrences = append(recurrences, currentDate)
 		if dailyIsOnlyWeekday {
 			currentDate = addWeekdays(int(recurEvery), currentDate)
@@ -157,12 +169,13 @@ func getIncludedWeeklyDays(weeklyDaysIncluded int16) []time.Weekday {
 
 func getWeeklyOccurrences(recurrenceStartDate time.Time, recurEvery int, daysIncluded []time.Weekday, recurrenceEndByDate *time.Time, timePeriodStart, timePeriodEnd time.Time) []time.Time {
 	recurrences := []time.Time{}
-	startDate := recurrenceStartDate
-	if startDate.Before(timePeriodStart) {
-		startDate = getWeeklyStartTime(recurrenceStartDate, recurEvery, timePeriodStart)
+	currentDate := recurrenceStartDate
+	if currentDate.Before(timePeriodStart) {
+		currentDate = getWeeklyStartTime(recurrenceStartDate, recurEvery, timePeriodStart)
+	} else {
+		currentDate = currentDate.AddDate(0, 0, -1*int(currentDate.Weekday())) // turn into beginning of week
 	}
-	currentDate := startDate.AddDate(0, 0, -1*int(startDate.Weekday())) // turn into beginning of week
-	for currentDate.Before(timePeriodEnd) && (recurrenceEndByDate == nil || currentDate.Before(*recurrenceEndByDate)) {
+	for (currentDate.Before(timePeriodEnd) || currentDate.Equal(timePeriodEnd)) && (recurrenceEndByDate == nil || currentDate.Before(*recurrenceEndByDate)) {
 		recurrences = append(recurrences, getIncludedDays(daysIncluded, currentDate, timePeriodStart, timePeriodEnd)...)
 		currentDate = currentDate.AddDate(0, 0, 7*(recurEvery))
 	}
@@ -196,12 +209,11 @@ func getWeeks(fromDate, toDate time.Time) int {
 
 func getMonthlyOccurrences(recurrenceStartDate time.Time, recurEvery int, monthlyDay, monthlyDayOfWeek, monthlyWeekOfMonth *int16, recurrenceEndByDate *time.Time, timePeriodStart, timePeriodEnd time.Time) []time.Time {
 	recurrences := []time.Time{}
-	startDate := recurrenceStartDate
-	if startDate.Before(timePeriodStart) {
-		startDate = getMonthlyStartTime(recurrenceStartDate, recurEvery, timePeriodStart)
+	currentDate := recurrenceStartDate
+	if currentDate.Before(timePeriodStart) {
+		currentDate = getMonthlyStartTime(recurrenceStartDate, recurEvery, timePeriodStart)
 	}
-	currentDate := startDate
-	for currentDate.Before(timePeriodEnd) && (recurrenceEndByDate == nil || currentDate.Before(*recurrenceEndByDate)) {
+	for (currentDate.Before(timePeriodEnd) || currentDate.Equal(timePeriodEnd)) && (recurrenceEndByDate == nil || currentDate.Before(*recurrenceEndByDate)) {
 		recurrences = append(recurrences, getMonthOccurrence(currentDate, timePeriodStart, timePeriodEnd, monthlyDay, monthlyDayOfWeek, monthlyWeekOfMonth)...)
 		currentDate = currentDate.AddDate(0, recurEvery, 0)
 	}
@@ -219,7 +231,7 @@ func getMonthOccurrence(startDate, timePeriodStart, timePeriodEnd time.Time, mon
 		}
 		occurrence = startDate.AddDate(0, 0, int(7*weekAdder+*monthlyDayOfWeek)-int(startDate.Weekday()))
 	}
-	if occurrence.Before(timePeriodEnd) && occurrence.After(timePeriodStart) {
+	if (occurrence.Before(timePeriodEnd) || occurrence.Equal(timePeriodEnd)) && (occurrence.After(timePeriodStart) || occurrence.Equal(timePeriodStart)) {
 		return []time.Time{occurrence}
 	}
 	return []time.Time{}
@@ -245,12 +257,11 @@ func getMonths(fromDate, toDate time.Time) int {
 
 func getYearlyOccurrences(recurrenceStartDate time.Time, recurEvery int, yearlyMonth, monthlyDay, monthlyDayOfWeek, monthlyWeekOfMonth *int16, recurrenceEndByDate *time.Time, timePeriodStart, timePeriodEnd time.Time) []time.Time {
 	recurrences := []time.Time{}
-	startDate := recurrenceStartDate
-	if startDate.Before(timePeriodStart) {
-		startDate = getYearlyStartTime(recurrenceStartDate, yearlyMonth, recurEvery, timePeriodStart)
+	currentDate := recurrenceStartDate
+	if currentDate.Before(timePeriodStart) {
+		currentDate = getYearlyStartTime(recurrenceStartDate, yearlyMonth, recurEvery, timePeriodStart)
 	}
-	currentDate := startDate
-	for currentDate.Before(timePeriodEnd) && (recurrenceEndByDate == nil || currentDate.Before(*recurrenceEndByDate)) {
+	for (currentDate.Before(timePeriodEnd) || currentDate.Equal(timePeriodEnd)) && (recurrenceEndByDate == nil || currentDate.Before(*recurrenceEndByDate)) {
 		recurrences = append(recurrences, getMonthOccurrence(currentDate, timePeriodStart, timePeriodEnd, monthlyDay, monthlyDayOfWeek, monthlyWeekOfMonth)...)
 		currentDate = time.Date(currentDate.Year()+recurEvery, time.Month(*yearlyMonth), 1, currentDate.Hour(), currentDate.Minute(), currentDate.Second(), currentDate.Nanosecond(), currentDate.Location())
 	}
