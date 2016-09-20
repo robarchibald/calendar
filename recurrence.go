@@ -18,7 +18,7 @@ type Recurrence struct {
 	EndByDate             *time.Time // date by which all occurrences must end by. Note that time and time zone information is NOT used in calculations
 }
 
-func (r *Recurrence) GetOccurences(timePeriodStart, timePeriodEnd time.Time) []time.Time {
+func (r *Recurrence) GetOccurrences(timePeriodStart, timePeriodEnd time.Time) []time.Time {
 	// Remove all time and time zone information from the recurrence start and end dates
 	startDate := time.Date(r.StartDate.Year(), r.StartDate.Month(), r.StartDate.Day(), 0, 0, 0, 0, time.UTC)
 	var endDate *time.Time
@@ -42,7 +42,7 @@ func (r *Recurrence) GetOccurences(timePeriodStart, timePeriodEnd time.Time) []t
 func (r *Recurrence) IsValidOccurrenceDate(occurrenceDate time.Time) bool {
 	// Remove all time and time zone information from the occurrenceDate
 	date := time.Date(occurrenceDate.Year(), occurrenceDate.Month(), occurrenceDate.Day(), 0, 0, 0, 0, time.UTC)
-	occurrences := r.GetOccurences(date, date)
+	occurrences := r.GetOccurrences(date, date)
 	return len(occurrences) == 1 && occurrences[0] == date
 }
 

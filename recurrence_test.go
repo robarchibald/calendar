@@ -15,7 +15,7 @@ func TestGetOccurrences(t *testing.T) {
 		RecurrencePatternCode: "D",
 		RecurEvery:            4,
 		DailyIsOnlyWeekday:    &dailyIsOnlyWeekday}
-	occurrences := r.GetOccurences(startDateNoTime, startDate.AddDate(0, 1, 0))
+	occurrences := r.GetOccurrences(startDateNoTime, startDate.AddDate(0, 1, 0))
 	expected := []time.Time{time.Date(2016, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2016, 1, 7, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 13, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 19, 0, 0, 0, 0, time.UTC),
 		time.Date(2016, 1, 25, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 29, 0, 0, 0, 0, time.UTC)}
@@ -28,7 +28,7 @@ func TestGetOccurrences(t *testing.T) {
 		RecurrencePatternCode: "W",
 		RecurEvery:            2,
 		WeeklyDaysIncluded:    &weeklyDaysIncluded}
-	occurrences = r.GetOccurences(startDateNoTime, startDate.AddDate(0, 1, 0))
+	occurrences = r.GetOccurrences(startDateNoTime, startDate.AddDate(0, 1, 0))
 	expected = []time.Time{time.Date(2016, 1, 1, 0, 0, 0, 0, time.UTC),
 		time.Date(2016, 1, 11, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 13, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 15, 0, 0, 0, 0, time.UTC),
 		time.Date(2016, 1, 25, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 27, 0, 0, 0, 0, time.UTC), time.Date(2016, 1, 29, 0, 0, 0, 0, time.UTC)}
@@ -45,7 +45,7 @@ func TestGetOccurrences(t *testing.T) {
 		MonthlyDayOfWeek:      &monthlyDayOfWeek,
 		MonthlyWeekOfMonth:    &monthlyWeekOfMonth,
 		EndByDate:             &endByDate}
-	occurrences = r.GetOccurences(startDateNoTime, startDate.AddDate(1, 0, 0))
+	occurrences = r.GetOccurrences(startDateNoTime, startDate.AddDate(1, 0, 0))
 	expected = []time.Time{time.Date(2016, 1, 28, 0, 0, 0, 0, time.UTC),
 		time.Date(2016, 3, 24, 0, 0, 0, 0, time.UTC), time.Date(2016, 5, 26, 0, 0, 0, 0, time.UTC)}
 	compareTimes(t, expected, occurrences, "TestGetOccurrences, 4th Thursday")
@@ -61,13 +61,13 @@ func TestGetOccurrences(t *testing.T) {
 		YearlyMonth:           &yearlyMonth,
 		MonthlyDayOfWeek:      &monthlyDayOfWeek,
 		MonthlyWeekOfMonth:    &monthlyWeekOfMonth}
-	occurrences = r.GetOccurences(startDate.AddDate(0, 1, 0), startDate.AddDate(2, 0, 0))
+	occurrences = r.GetOccurrences(startDate.AddDate(0, 1, 0), startDate.AddDate(2, 0, 0))
 	expected = []time.Time{time.Date(2016, 6, 16, 0, 0, 0, 0, time.UTC),
 		time.Date(2017, 6, 15, 0, 0, 0, 0, time.UTC)}
 	compareTimes(t, expected, occurrences, "TestGetOccurrences, 3rd Thursday of June")
 
 	r = Recurrence{RecurrencePatternCode: "B"} // bogus pattern
-	if len(r.GetOccurences(startDate, startDate.AddDate(1, 0, 0))) != 0 {
+	if len(r.GetOccurrences(startDate, startDate.AddDate(1, 0, 0))) != 0 {
 		t.Error("Expected empty for bogus recurrence pattern code")
 	}
 }
