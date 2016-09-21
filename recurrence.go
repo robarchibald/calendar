@@ -28,9 +28,17 @@ func (r *Recurrence) GetOccurrences(timePeriodStart, timePeriodEnd time.Time) []
 	}
 	switch {
 	case r.RecurrencePatternCode == "D":
-		return getDailyOccurrences(startDate, int(r.RecurEvery), *r.DailyIsOnlyWeekday, endDate, timePeriodStart, timePeriodEnd)
+		dailyIsOnlyWeekday := false
+		if r.DailyIsOnlyWeekday != nil {
+			dailyIsOnlyWeekday = *r.DailyIsOnlyWeekday
+		}
+		return getDailyOccurrences(startDate, int(r.RecurEvery), dailyIsOnlyWeekday, endDate, timePeriodStart, timePeriodEnd)
 	case r.RecurrencePatternCode == "W":
-		return getWeeklyOccurrences(startDate, int(r.RecurEvery), getIncludedWeeklyDays(*r.WeeklyDaysIncluded), endDate, timePeriodStart, timePeriodEnd)
+		var weeklyDaysIncluded int16 = 127 // all days
+		if r.WeeklyDaysIncluded != nil {
+			weeklyDaysIncluded = *r.WeeklyDaysIncluded
+		}
+		return getWeeklyOccurrences(startDate, int(r.RecurEvery), getIncludedWeeklyDays(weeklyDaysIncluded), endDate, timePeriodStart, timePeriodEnd)
 	case r.RecurrencePatternCode == "M":
 		return getMonthlyOccurrences(startDate, int(r.RecurEvery), r.MonthlyDay, r.MonthlyDayOfWeek, r.MonthlyWeekOfMonth, endDate, timePeriodStart, timePeriodEnd)
 	case r.RecurrencePatternCode == "Y":
