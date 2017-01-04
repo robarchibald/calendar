@@ -13,11 +13,11 @@ A simple Go library to calculate recurring appointment dates within a time perio
 startTime := time.Date(2016, 1, 1, 12, 30, 0, 0, time.UTC)
 dailyIsOnlyWeekday := true
 r := Recurrence{
-	StartDateTime:         startTime,
+	StartDate: 	           startTime,
 	RecurrencePatternCode: "D",
 	RecurEvery:            4,
 	DailyIsOnlyWeekday:    &dailyIsOnlyWeekday}
-occurrences := r.GetOccurences(startTime, startTime.AddDate(0, 1, 0))
+occurrences := r.GetOccurrences(startTime, startTime.AddDate(0, 1, 0))
 ```
 For additional examples, see recurrence_test.go
 
@@ -29,7 +29,7 @@ The Recurrence struct is modeled after the recurring schedule data model used by
  - StartDateTime - start time of the appointment. Should be set to the first desired occurence of the recurring appointment
  - RecurrencePatternCode - D: daily, W: weekly, M: monthly or Y: yearly
  - RecurEvery - number defining how many days, weeks, months or years to wait between recurrences
- - EndByDate (optional) - date by which recurrences must be done by 
+ - EndByDate (optional) - date by which recurrences must be done by
  - NumberOfOccurrences (optional) - data for UI which can be used to store the number of recurrences. Has no effect in calculations though. EndByDate must be calculated based on NumberOfOccurrences
 
 **Recurrence Pattern Code D (daily)**
