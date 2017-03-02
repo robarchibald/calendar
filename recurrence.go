@@ -234,6 +234,13 @@ func getMonthOccurrence(startDate, timePeriodStart, timePeriodEnd time.Time, mon
 		occurrence = time.Date(startDate.Year(), startDate.Month(), int(*monthlyDay), startDate.Hour(), startDate.Minute(), startDate.Second(), startDate.Nanosecond(), startDate.Location())
 	} else if monthlyDayOfWeek != nil && monthlyWeekOfMonth != nil {
 		weekAdder := *monthlyWeekOfMonth
+		if *monthlyWeekOfMonth == 54 { // last week of month (try 5th week, then 4th)
+			if startDate.AddDate(0, 0, int(7*5+*monthlyDayOfWeek)-int(startDate.Weekday())).Month() == startDate.Month() {
+				weekAdder = 5
+			} else {
+				weekAdder = 4
+			}
+		}
 		if *monthlyDayOfWeek >= int16(startDate.Weekday()) { // first of my desired day of week occurs in first week
 			weekAdder--
 		}
