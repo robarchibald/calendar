@@ -274,11 +274,18 @@ func TestGetMonthOccurrence(t *testing.T) {
 		t.Error("expected no 5th Thursday", date)
 	}
 
+	monthlyDayOfWeek = 2    // Tuesday
+	monthlyWeekOfMonth = 54 // 54th week (last week of the month. non-intuitive, but it means grab the 5th week if it exists, otherwise use week 4)
+	date = getMonthOccurrence(startDate, timePeriodStart, timePeriodEnd, nil, &monthlyDayOfWeek, &monthlyWeekOfMonth)
+	if len(date) != 1 || date[0] != time.Date(2016, 5, 31, 12, 30, 0, 0, time.UTC) {
+		t.Error("expected last Tuesday", date)
+	}
+
 	monthlyDayOfWeek = 4    // Thursday
 	monthlyWeekOfMonth = 54 // 54th week (last week of the month. non-intuitive, but it means grab the 5th week if it exists, otherwise use week 4)
 	date = getMonthOccurrence(startDate, timePeriodStart, timePeriodEnd, nil, &monthlyDayOfWeek, &monthlyWeekOfMonth)
 	if len(date) != 1 || date[0] != time.Date(2016, 5, 26, 12, 30, 0, 0, time.UTC) {
-		t.Error("expected no last Thursday", date)
+		t.Error("expected last Tuesday", date)
 	}
 
 	monthlyDayOfWeek = 2   // Thursday
@@ -346,6 +353,14 @@ func TestGetYearlyOccurrences(t *testing.T) {
 	actual := getYearlyOccurrences(recurrenceStartDate, 1, &yearlyMonth, &monthlyDay, nil, nil, nil, timePeriodStart, timePeriodEnd)
 	compareTimes(t, expected, actual, "TestGetYearlyOccurrences, 14th of every month")
 
+	yearlyMonth = 1
+	monthlyWeekOfMonth = 54 // last week of the month
+	monthlyDayOfWeek = 1
+	expected = []time.Time{time.Date(2017, 1, 30, 0, 0, 0, 0, time.UTC), time.Date(2018, 1, 29, 0, 0, 0, 0, time.UTC)}
+	actual = getYearlyOccurrences(recurrenceStartDate, 1, &yearlyMonth, nil, &monthlyDayOfWeek, &monthlyWeekOfMonth, nil, timePeriodStart, timePeriodEnd)
+	compareTimes(t, expected, actual, "TestGetYearlyOccurrences, last Monday in January")
+
+	yearlyMonth = 2
 	monthlyDayOfWeek = 4   // Thursday
 	monthlyWeekOfMonth = 3 // 3rd week
 	expected = []time.Time{time.Date(2017, 2, 16, 0, 0, 0, 0, time.UTC), time.Date(2018, 2, 15, 0, 0, 0, 0, time.UTC)}

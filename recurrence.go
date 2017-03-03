@@ -235,7 +235,7 @@ func getMonthOccurrence(startDate, timePeriodStart, timePeriodEnd time.Time, mon
 	} else if monthlyDayOfWeek != nil && monthlyWeekOfMonth != nil {
 		weekAdder := *monthlyWeekOfMonth
 		if *monthlyWeekOfMonth == 54 { // last week of month (try 5th week, then 4th)
-			if startDate.AddDate(0, 0, int(7*5+*monthlyDayOfWeek)-int(startDate.Weekday())).Month() == startDate.Month() {
+			if startDate.AddDate(0, 0, int(28+*monthlyDayOfWeek)-int(startDate.Weekday())).Month() == startDate.Month() {
 				weekAdder = 5
 			} else {
 				weekAdder = 4
