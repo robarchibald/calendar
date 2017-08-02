@@ -1,4 +1,5 @@
 # calendar
+[![Build Status](https://travis-ci.org/EndFirstCorp/calendar.svg?branch=master)](https://travis-ci.org/EndFirstCorp/calendar) [![Coverage Status](https://coveralls.io/repos/github/EndFirstCorp/calendar/badge.svg?branch=master)](https://coveralls.io/github/EndFirstCorp/calendar?branch=master)
 A simple Go library to calculate recurring appointment dates within a time period. Supports all types of recurrences in Outlook and Google calendar
 
 ## Getting Started
