@@ -58,7 +58,7 @@ The Recurrence struct is modeled after the recurring schedule data model used by
 **Recurrence Pattern Code Y (yearly)**
 
  - YearlyMonth - month of the year to recur on (1=January, 2=February, 3=March, 4=April, 5=May, 6=June, 7=July)
- - MonthlyWeekOfMonth - week of the month to recur on. e.g. Thanksgiving is always on the 4th week of the month. Must be used together with MonthlyDayOfWeek
+ - MonthlyWeekOfMonth - week of the month to recur on. e.g. Thanksgiving is always on the 4th week of the month. Note: in order to get the last week of the month, use 54 (which can be remembered by thinking take the 5th week unless it doesn't exist, then use 4th week). Must be used together with MonthlyDayOfWeek
  - MonthlyDayOfWeek - day of the week to recur on (0=Sunday, 1=Monday, 2=Tuesday, 3=Wednesday, 4=Thursday, 5=Friday, 6=Saturday). Must be used together with MonthlyWeekOfMonth
  **OR**
  - MonthlyDay - day of the month to recur on. e.g. 5 would recur on the 5th of every month
