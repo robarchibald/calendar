@@ -64,4 +64,4 @@ The Recurrence struct is modeled after the recurring schedule data model used by
  - MonthlyDay - day of the month to recur on. e.g. 5 would recur on the 5th of every month
 
 
-![Outlook Recurrence Setup](https://robarchibald.github.io/calendar/images/outlookrecurrence.jpg)
+![Outlook Recurrence Setup](https://raw.githubusercontent.com/EndFirstCorp/calendar/master/outlookrecurrence.jpg)
